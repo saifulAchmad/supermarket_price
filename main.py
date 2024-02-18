@@ -1,13 +1,18 @@
+from bz2 import compress
+import gzip
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 # import plotly.express as px
 import plotly.express as px 
 import mplcursors
+import numpy as np
+from datetime import datetime
 
 
 
-df = pd.read_csv("data_source/cleaned_data2.csv")
+
+df = pd.read_csv("data_source/cleaned_data2.csv",compression="gzip")
 
 # df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
 # df['date'] = df['date'].dt.date
@@ -20,7 +25,8 @@ default_value = "all"
 
 Store = df['supermarket'].drop_duplicates()
 # selectStore = st.sidebar.multiselect("Select Store : ", df['supermarket'].drop_duplicates(), index=len(Store)-1,multiple=True)
-selectStore = st.sidebar.multiselect("Select Store:", df['supermarket'].drop_duplicates())
+all_store =df['supermarket'].unique()
+selectStore = st.sidebar.multiselect("Select Store:", all_store, default=all_store)
 filtered_df =df[df['supermarket'].isin(selectStore)]   
 
 searchItem = st.sidebar.text_input("Search by item name : ")
@@ -41,7 +47,7 @@ filtered_df =df[df['category'].isin(selectCat)]
 
 st.dataframe(filtered_df)
 
-fig, ax = plt.subplots()
+
 Cat = df['category'].value_counts()
 
 
@@ -62,12 +68,85 @@ with tab2 :
 tab3, tab4 = st.tabs(["prices","prices by unit"])
 
 with tab3 : 
-    total_price_by_date = df.groupby('date')['prices_(¬£)'].sum().reset_index()
+    fig, ax = plt.subplots()
+    total_price_by_date = filtered_df.groupby('date')['prices_(¬£)'].sum().reset_index()
     fig = px.line(total_price_by_date, x='date', y='prices_(¬£)')
 
     st.plotly_chart(fig)
 with tab4 : 
-    total_unit_price_by_date = df.groupby('date')['prices_unit_(¬£)'].sum().reset_index()
+    fig, ax = plt.subplots()
+    total_unit_price_by_date = filtered_df.groupby('date')['prices_unit_(¬£)'].sum().reset_index()
     fig = px.line(total_unit_price_by_date, x='date', y='prices_unit_(¬£)')
-    df['category']
+    # df['category']
     st.plotly_chart(fig)
+
+
+
+tab5,tab6 =st.tabs(["Price Percentage Compared from first data","Price per unit Percentage Compared from first data" ])
+
+with tab5:
+    fig, ax = plt.subplots()
+    min_date = filtered_df["date"].min()
+    max_date = filtered_df["date"].max()
+
+    early_price=filtered_df[filtered_df['date'] == min_date]['prices_(¬£)'].values.sum()
+    late_price=filtered_df[filtered_df['date'] == max_date]['prices_(¬£)'].values.sum()
+
+    price_change=((late_price-early_price)/early_price*100)
+
+    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+
+with tab6:
+    fig, ax = plt.subplots()
+    min_date = filtered_df["date"].min()
+    max_date = filtered_df["date"].max()
+
+    early_price=filtered_df[filtered_df['date'] == min_date]['prices_unit_(¬£)'].values.sum()
+    late_price=filtered_df[filtered_df['date'] == max_date]['prices_unit_(¬£)'].values.sum()
+
+    price_change=((late_price-early_price)/early_price*100)
+
+    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+
+
+
+tab7,tab8 =st.tabs(["Price Percentage Compared from previous data","Price per unit Percentage Compared from previous data" ])
+
+with tab7:
+    fig, ax = plt.subplots()
+    date_df=filtered_df['date'].unique()
+    # date_df = np.array([datetime.strptime(date_str, '%Y-%m-%d') for date_str in date_df])
+
+    date_df.sort()
+    idx= len(date_df)-2
+    prev_date= date_df[idx]
+    prev_date_main= filtered_df[filtered_df["date"] == prev_date]
+    max_date = df["date"].max()
+
+    
+    early_price=filtered_df[filtered_df['date'] == prev_date]['prices_(¬£)'].values.sum()
+    late_price=filtered_df[filtered_df['date'] == max_date]['prices_(¬£)'].values.sum()
+
+    price_change=((late_price-early_price)/early_price*100)
+
+    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+
+with tab8:
+    fig, ax = plt.subplots()
+    date_df=filtered_df['date'].unique()
+    # date_df = np.array([datetime.strptime(date_str, '%Y-%m-%d') for date_str in date_df])
+
+    date_df.sort()
+    idx= len(date_df)-2
+    prev_date= date_df[idx]
+    prev_date_main= filtered_df[filtered_df["date"] == prev_date]
+    max_date = df["date"].max()
+    
+    
+    early_price=filtered_df[filtered_df['date'] == prev_date]['prices_unit_(¬£)'].values.sum()
+    late_price=filtered_df[filtered_df['date'] == max_date]['prices_unit_(¬£)'].values.sum()
+
+    price_change=((late_price-early_price)/early_price*100)
+
+    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+
