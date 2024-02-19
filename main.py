@@ -107,12 +107,11 @@ with tab6:
     price_change=((late_price-early_price)/early_price*100)
 
     st.markdown(f"The percentage increase is: {price_change:.2f}%")
+st.markdown("<hr>", unsafe_allow_html=True)
 
-
-
-tab7,tab8 =st.tabs(["Price Percentage Compared from previous data","Price per unit Percentage Compared from previous data" ])
-
-with tab7:
+# tab7,tab8 =st.tabs(["Price Percentage Compared from previous data","Price per unit Percentage Compared from previous data" ])
+col1,col2 = st.columns([1,1])
+with col1:
     fig, ax = plt.subplots()
     date_df=filtered_df['date'].unique()
     # date_df = np.array([datetime.strptime(date_str, '%Y-%m-%d') for date_str in date_df])
@@ -129,9 +128,10 @@ with tab7:
 
     price_change=((late_price-early_price)/early_price*100)
 
-    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+    # st.markdown(f"The percentage increase is: {price_change:.2f}%")
+    st.metric(label="Price Percentage Compared from previous data : ", value=f"{price_change:.2f} %" )
 
-with tab8:
+with col2:
     fig, ax = plt.subplots()
     date_df=filtered_df['date'].unique()
     # date_df = np.array([datetime.strptime(date_str, '%Y-%m-%d') for date_str in date_df])
@@ -148,5 +148,5 @@ with tab8:
 
     price_change=((late_price-early_price)/early_price*100)
 
-    st.markdown(f"The percentage increase is: {price_change:.2f}%")
+    st.metric(label="Price per unit Percentage Compared from previous data :", value=f"{price_change:.2f} %" )
 
